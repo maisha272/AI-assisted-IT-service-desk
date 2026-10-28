@@ -661,3 +661,25 @@ code {
   margin: 0;
   padding-left: 1.2rem;
 }
+
+.success {
+  color: var(--success);
+  background: #e9f7ef;
+  border: 1px solid #bfe5cc;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+}
+
+@media (max-width: 860px) {
+  .topbar {
+    gap: 1rem;
+    padding: 0 0.75rem;
+  }
+  .topbar nav {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .user-menu > span {
+    display: none;
+  }
+}

@@ -4,6 +4,9 @@ import type {
   Client,
   CreateTicketRequest,
   Dashboard,
+  InboundEmailResult,
+  IntegrationStatus,
+  NotificationLogEntry,
   KnowledgeArticle,
   KnowledgeSearchResult,
   LoginResponse,
@@ -56,7 +59,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
       const firstValidationError = problem.errors
         ? (Object.values(problem.errors).flat()[0] as string | undefined)
         : undefined
-      message = firstValidationError ?? problem.detail ?? problem.title ?? message
+      message = firstValidationError ?? problem.detail ?? problem.message ?? problem.title ?? message
     } catch {
       // Body wasn't JSON; keep the generic message.
     }
@@ -104,6 +107,12 @@ export const api = {
   listKnowledge: () => request<KnowledgeArticle[]>('/knowledge'),
   searchKnowledge: (q: string) => request<KnowledgeSearchResult[]>(`/knowledge/search?q=${encodeURIComponent(q)}`),
   createKnowledge: (body: Omit<KnowledgeArticle, 'id' | 'createdAt'>) => post<KnowledgeArticle>('/knowledge', body),
+  getIntegrationStatus: () => request<IntegrationStatus>('/integrations/status'),
+  listNotifications: () => request<NotificationLogEntry[]>('/integrations/notifications'),
+  dispatchNotifications: () => post<{ attempted: number }>('/integrations/notifications/dispatch', {}),
+  sendTestNotification: () => post<NotificationLogEntry>('/integrations/notifications/test', {}),
+  simulateEmail: (email: { from: string; subject: string; body: string }) =>
+    post<InboundEmailResult>('/integrations/email/simulate', email),
   listClients: () => request<Client[]>('/clients'),
   listAgents: () => request<Agent[]>('/agents'),
 }

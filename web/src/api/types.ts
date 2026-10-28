@@ -175,6 +175,29 @@ export interface KnowledgeSearchResult {
   score: number
 }
 
+export interface IntegrationStatus {
+  teamsConfigured: boolean
+  inboundEmailEnabled: boolean
+  dispatchIntervalSeconds: number
+}
+
+export interface NotificationLogEntry {
+  id: number
+  channel: string
+  event: 'NewTicket' | 'SlaAtRisk' | 'SlaBreached' | 'Test'
+  ticketId: number | null
+  message: string
+  delivered: boolean
+  error: string | null
+  createdAt: string
+}
+
+export interface InboundEmailResult {
+  outcome: 'TicketCreated' | 'CommentAdded' | 'Rejected'
+  ticketId: number | null
+  message: string
+}
+
 export interface Client {
   id: number
   name: string
