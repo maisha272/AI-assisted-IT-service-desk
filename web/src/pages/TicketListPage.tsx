@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, type TicketFilters } from '../api/client'
 import { TICKET_PRIORITIES, TICKET_STATUSES, type TicketSummary } from '../api/types'
+import { useAuth } from '../auth/AuthContext'
 import { PriorityBadge, StatusBadge } from '../components/Badges'
 import { categoryLabel, formatDateTime, statusLabel } from '../utils/format'
 
 export default function TicketListPage() {
+  const { isAgent } = useAuth()
   const [filters, setFilters] = useState<TicketFilters>({})
   const [searchInput, setSearchInput] = useState('')
   const [tickets, setTickets] = useState<TicketSummary[] | null>(null)
@@ -32,7 +34,7 @@ export default function TicketListPage() {
   return (
     <section>
       <div className="page-header">
-        <h1>Tickets</h1>
+        <h1>{isAgent ? 'All tickets' : 'My tickets'}</h1>
         <Link className="button primary" to="/tickets/new">
           New ticket
         </Link>
@@ -85,7 +87,7 @@ export default function TicketListPage() {
               <tr>
                 <th>#</th>
                 <th>Title</th>
-                <th>Client</th>
+                {isAgent && <th>Client</th>}
                 <th>Category</th>
                 <th>Priority</th>
                 <th>Status</th>
@@ -100,7 +102,7 @@ export default function TicketListPage() {
                   <td>
                     <Link to={`/tickets/${t.id}`}>{t.title}</Link>
                   </td>
-                  <td>{t.clientName}</td>
+                  {isAgent && <td>{t.clientName}</td>}
                   <td>{categoryLabel(t.category)}</td>
                   <td>
                     <PriorityBadge priority={t.priority} />

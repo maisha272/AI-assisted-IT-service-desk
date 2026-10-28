@@ -1,6 +1,9 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { useAuth } from '../auth/AuthContext'
 
 export default function Layout() {
+  const { user, isAgent, logout } = useAuth()
+
   return (
     <div className="app">
       <header className="topbar">
@@ -9,10 +12,21 @@ export default function Layout() {
         </div>
         <nav>
           <NavLink to="/tickets" end>
-            Tickets
+            {isAgent ? 'Tickets' : 'My tickets'}
           </NavLink>
           <NavLink to="/tickets/new">New ticket</NavLink>
         </nav>
+        {user && (
+          <div className="user-menu">
+            <span>
+              {user.displayName}
+              <span className="role-pill">{isAgent ? 'Agent' : user.clientName}</span>
+            </span>
+            <button className="button small" onClick={logout}>
+              Sign out
+            </button>
+          </div>
+        )}
       </header>
       <main className="content">
         <Outlet />
