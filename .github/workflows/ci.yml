@@ -1,14 +1,15 @@
-name: CI
+name: CI/CD
 
-# Build and test on every push and on every pull request.
+# Build and test on every push and pull request. Deploy to Azure on pushes to main (after tests pass).
 on:
   push:
   pull_request:
 
-# Cancel an older run of the same branch when a newer commit is pushed.
+# Cancel an older run of the same branch when a newer commit is pushed — but never cancel a
+# deployment of main half-way through.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -69,3 +70,48 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  deploy:
+    name: Deploy to Azure App Service
+    needs: [api, web]
+    # Only for pushes to main, and only once the Azure app name is configured as a repository variable
+    # (Settings > Secrets and variables > Actions > Variables). Until then CI still runs; deploy is skipped.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.AZURE_WEBAPP_NAME != ''
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.webapp-url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Build web app
+        working-directory: web
+        run: npm ci && npm run build
+
+      - name: Publish API with the web app in wwwroot
+        run: |
+          dotnet publish src/ServiceDesk.Api/ServiceDesk.Api.csproj --configuration Release --output publish
+          mkdir -p publish/wwwroot
+          cp -r web/dist/. publish/wwwroot/
+
+      - name: Deploy
+        id: deploy
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: publish
+
+      - name: Smoke test
+        # The free tier and a paused serverless database can take a minute to wake up, hence the retries.
+        run: curl --fail --silent --show-error --retry 12 --retry-delay 10 --retry-all-errors "${{ steps.deploy.outputs.webapp-url }}/health"
