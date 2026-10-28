@@ -6,12 +6,14 @@ using ServiceDesk.Api.Domain;
 using ServiceDesk.Api.Dtos;
 using ServiceDesk.Api.Services;
 using ServiceDesk.Api.Services.Auth;
+using ServiceDesk.Api.Services.Triage;
 
 namespace ServiceDesk.Api.Controllers;
 
 [ApiController]
 [Route("api/tickets")]
-public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimeProvider clock) : ControllerBase
+public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimeProvider clock, TriageQueue triageQueue)
+    : ControllerBase
 {
     private const int MaxResults = 500;
 
@@ -92,6 +94,9 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
         SlaPolicy.ApplyDeadlines(ticket);
         db.Tickets.Add(ticket);
         await db.SaveChangesAsync(ct);
+
+        // AI triage runs in the background; the suggestion appears on the ticket for an agent to review.
+        triageQueue.Enqueue(ticket.Id);
 
         var created = (await LoadVisibleTicket(ticket.Id, user, ct))!;
         return CreatedAtAction(nameof(Get), new { id = ticket.Id }, created.ToDetail(user, now));
