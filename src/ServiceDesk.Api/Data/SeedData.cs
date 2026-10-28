@@ -109,9 +109,15 @@ public static class SeedData
             if (creator.Client != client) client = creator.Client!;
 
             var isRecent = i < recentOpenTickets;
-            var createdAt = isRecent
-                ? now.AddHours(-rng.NextDouble() * 60)
-                : now.AddDays(-(3 + rng.NextDouble() * 87));
+            // The first two tickets are untouched and ~80% of the way to their response deadline, so the
+            // "near breach" state always shows up in the demo.
+            var isNearBreach = i < 2;
+            var createdAt = isNearBreach
+                ? now - SlaPolicy.For(template.Priority).Response * 0.8
+                : isRecent
+                    // Skewed towards the last few hours, so most open work is fresh and only a few tickets are late.
+                    ? now.AddHours(-Math.Pow(rng.NextDouble(), 2) * 30)
+                    : now.AddDays(-(3 + rng.NextDouble() * 87));
 
             var ticket = new Ticket
             {
@@ -128,6 +134,8 @@ public static class SeedData
             SlaPolicy.ApplyDeadlines(ticket);
             client.Tickets.Add(ticket);
 
+            if (isNearBreach)
+                continue; // stays New and unassigned
             if (isRecent)
                 BuildOpenHistory(ticket, agents, rng, now);
             else
@@ -154,7 +162,7 @@ public static class SeedData
     {
         var age = now - ticket.CreatedAt;
         var roll = rng.NextDouble();
-        if (roll < 0.35 && age.TotalHours < 30) return; // still New
+        if (roll < 0.25 && age.TotalHours < 6) return; // still New
 
         var agent = agents[rng.Next(agents.Count)];
         ticket.AssignedTo = agent;
