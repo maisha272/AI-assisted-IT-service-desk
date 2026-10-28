@@ -502,3 +502,6 @@ coverage/
 *.db
 *.db-shm
 *.db-wal
+
+# Local PR description drafts
+.pr/
