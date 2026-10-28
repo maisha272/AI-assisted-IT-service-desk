@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using ServiceDesk.Api.Data;
 using ServiceDesk.Api.Services;
 using ServiceDesk.Api.Services.Auth;
+using ServiceDesk.Api.Services.Triage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,10 +18,14 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddServiceDeskAuth(builder.Configuration, builder.Environment);
 builder.Services.AddScoped<DashboardService>();
+builder.Services.AddAiTriage(builder.Configuration);
 
 var app = builder.Build();
 
 await app.InitialiseDatabaseAsync();
+
+var aiOptions = app.Configuration.GetSection(AiOptions.SectionName).Get<AiOptions>() ?? new AiOptions();
+app.Logger.LogInformation("AI triage mode: {Mode}", TriageSetup.DescribeMode(aiOptions));
 
 if (app.Environment.IsDevelopment())
 {

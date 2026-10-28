@@ -49,6 +49,7 @@ public record TicketDetailDto(
     int Id,
     string Title,
     string Description,
+    string? AiSummary,
     TicketStatus Status,
     TicketPriority Priority,
     TicketCategory Category,

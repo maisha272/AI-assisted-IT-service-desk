@@ -15,6 +15,7 @@ public record DashboardDto(
     int AtRiskTickets,
     IReadOnlyList<PriorityCount> OpenByPriority,
     IReadOnlyList<StatusCount> OpenByStatus,
+    int PendingTriageSuggestions,
     int ResolvedLast30Days,
     double? AverageResolutionMinutesLast30Days,
     double? SlaCompliancePercentLast30Days,
@@ -60,6 +61,7 @@ public class DashboardService(AppDbContext db, TimeProvider clock)
                 .Select(p => new PriorityCount(p, open.Count(t => t.Priority == p))).ToList(),
             OpenByStatus: new[] { TicketStatus.New, TicketStatus.InProgress, TicketStatus.Waiting }
                 .Select(s => new StatusCount(s, open.Count(t => t.Status == s))).ToList(),
+            PendingTriageSuggestions: await db.TriageSuggestions.CountAsync(s => s.Status == TriageStatus.Pending, ct),
             ResolvedLast30Days: resolved.Count,
             AverageResolutionMinutesLast30Days: resolved.Count == 0
                 ? null

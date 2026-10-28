@@ -19,7 +19,7 @@ public static class TicketMapping
     }
 
     public static TicketDetailDto ToDetail(this Ticket t, User viewer, DateTime now) => new(
-        t.Id, t.Title, t.Description, t.Status, t.Priority, t.Category, t.Source,
+        t.Id, t.Title, t.Description, t.AiSummary, t.Status, t.Priority, t.Category, t.Source,
         t.ClientId, t.Client.Name, t.CreatedBy.DisplayName, t.AssignedToId, t.AssignedTo?.DisplayName,
         t.CreatedAt, t.UpdatedAt, t.ResolvedAt, t.ClosedAt, t.ToSlaDto(now),
         TicketWorkflow.AllowedNextStatuses(t.Status, viewer.Role),
