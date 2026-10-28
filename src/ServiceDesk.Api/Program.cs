@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 using ServiceDesk.Api.Data;
-using ServiceDesk.Api.Services;
+using ServiceDesk.Api.Services.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +14,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddDatabase(builder.Configuration);
-builder.Services.AddScoped<ICurrentUser, FirstAgentCurrentUser>();
+builder.Services.AddServiceDeskAuth(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
 
@@ -22,8 +22,12 @@ await app.InitialiseDatabaseAsync();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().AllowAnonymous();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapControllers();
 

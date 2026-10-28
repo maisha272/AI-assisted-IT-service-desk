@@ -11,6 +11,7 @@ public static class SeedData
 {
     public const string DemoAgentEmail = "sam@servicedesk.test";
     public const string DemoClientEmail = "olivia@northwind.test";
+    public const string DefaultDemoPassword = "Demo123!";
 
     private record TicketTemplate(string Title, string Description, TicketCategory Category, TicketPriority Priority, string Fix);
 
@@ -79,7 +80,8 @@ public static class SeedData
         [TicketPriority.Low] = 120,
     };
 
-    public static void Populate(AppDbContext db, DateTime now)
+    /// <param name="hashPassword">Turns the demo password into a stored hash for each user.</param>
+    public static void Populate(AppDbContext db, DateTime now, Func<User, string> hashPassword)
     {
         var rng = new Random(42);
 
@@ -98,6 +100,9 @@ public static class SeedData
             NewClient("Kestrel Architects", "kestrel.test", ("Chloe King", "chloe"), ("Lucas Wright", "lucas")),
         };
         foreach (var c in clients) c.CreatedAt = now.AddDays(-365);
+
+        foreach (var user in agents.Concat(clients.SelectMany(c => c.Users)))
+            user.PasswordHash = hashPassword(user);
 
         db.Users.AddRange(agents);
         db.Clients.AddRange(clients);

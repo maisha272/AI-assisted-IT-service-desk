@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ServiceDesk.Api.Data;
 using ServiceDesk.Api.Domain;
 using ServiceDesk.Api.Dtos;
 using ServiceDesk.Api.Services;
+using ServiceDesk.Api.Services.Auth;
 
 namespace ServiceDesk.Api.Controllers;
 
@@ -139,10 +141,10 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
     }
 
     [HttpPatch("{id:int}")]
+    [Authorize(Roles = Roles.Agent)]
     public async Task<ActionResult<TicketDetailDto>> Update(int id, UpdateTicketRequest request, CancellationToken ct)
     {
         var user = await currentUser.GetAsync(ct);
-        if (user.Role != UserRole.Agent) return Forbid();
         var ticket = await LoadVisibleTicket(id, user, ct);
         if (ticket is null) return NotFound();
 
@@ -155,10 +157,10 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
     }
 
     [HttpPost("{id:int}/assign")]
+    [Authorize(Roles = Roles.Agent)]
     public async Task<ActionResult<TicketDetailDto>> Assign(int id, AssignTicketRequest request, CancellationToken ct)
     {
         var user = await currentUser.GetAsync(ct);
-        if (user.Role != UserRole.Agent) return Forbid();
         var ticket = await LoadVisibleTicket(id, user, ct);
         if (ticket is null) return NotFound();
 

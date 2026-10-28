@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ServiceDesk.Api.Data;
 using ServiceDesk.Api.Domain;
+using ServiceDesk.Api.Services.Auth;
 
 namespace ServiceDesk.Api.Controllers;
 
@@ -11,6 +13,7 @@ public record AgentDto(int Id, string DisplayName);
 /// <summary>Small reference lists the UI needs for dropdowns.</summary>
 [ApiController]
 [Route("api")]
+[Authorize(Roles = Roles.Agent)]
 public class LookupsController(AppDbContext db) : ControllerBase
 {
     [HttpGet("clients")]
