@@ -11,6 +11,7 @@ export default function Layout() {
           <span className="brand-mark">SD</span> Service Desk
         </div>
         <nav>
+          {isAgent && <NavLink to="/dashboard">Dashboard</NavLink>}
           <NavLink to="/tickets" end>
             {isAgent ? 'Tickets' : 'My tickets'}
           </NavLink>

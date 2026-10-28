@@ -3,6 +3,7 @@ import type {
   Agent,
   Client,
   CreateTicketRequest,
+  Dashboard,
   LoginResponse,
   TicketDetail,
   TicketPriority,
@@ -90,6 +91,7 @@ export const api = {
     request<TicketDetail>(`/tickets/${id}`, { method: 'PATCH', body: JSON.stringify(changes) }),
   assignTicket: (id: number, agentId: number | null) =>
     post<TicketDetail>(`/tickets/${id}/assign`, { agentId }),
+  getDashboard: () => request<Dashboard>('/dashboard'),
   listClients: () => request<Client[]>('/clients'),
   listAgents: () => request<Agent[]>('/agents'),
 }
