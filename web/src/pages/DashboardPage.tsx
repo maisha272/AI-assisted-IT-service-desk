@@ -36,14 +36,14 @@ export default function DashboardPage() {
           value={data.breachedTickets}
           tone={data.breachedTickets > 0 ? 'critical' : undefined}
           hint="Open tickets past a deadline"
-          to="/tickets?sla=Breached"
+          to="/tickets?sla=Breached&open=true"
         />
         <StatTile
           label="Near breach"
           value={data.atRiskTickets}
           tone={data.atRiskTickets > 0 ? 'warning' : undefined}
           hint="Less than 25% of time left"
-          to="/tickets?sla=AtRisk"
+          to="/tickets?sla=AtRisk&open=true"
         />
         <StatTile
           label="AI suggestions to review"

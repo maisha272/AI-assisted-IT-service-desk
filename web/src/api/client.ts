@@ -78,6 +78,8 @@ export interface TicketFilters {
   status?: TicketStatus
   priority?: TicketPriority
   sla?: SlaState
+  /** Only tickets that are not yet resolved or closed. */
+  open?: boolean
   search?: string
 }
 
@@ -85,7 +87,7 @@ export const api = {
   login: (email: string, password: string) => post<LoginResponse>('/auth/login', { email, password }),
   listTickets(filters: TicketFilters = {}) {
     const params = new URLSearchParams()
-    for (const [key, value] of Object.entries(filters)) if (value) params.set(key, value)
+    for (const [key, value] of Object.entries(filters)) if (value) params.set(key, String(value))
     const qs = params.toString()
     return request<TicketSummary[]>(`/tickets${qs ? `?${qs}` : ''}`)
   },

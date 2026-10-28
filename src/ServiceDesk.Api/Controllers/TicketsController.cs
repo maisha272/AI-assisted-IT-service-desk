@@ -23,12 +23,14 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
         [FromQuery] TicketPriority? priority,
         [FromQuery] string? search,
         [FromQuery] SlaState? sla,
+        [FromQuery] bool open,
         CancellationToken ct)
     {
         var user = await currentUser.GetAsync(ct);
         var query = db.Tickets.VisibleTo(user);
 
         if (status is not null) query = query.Where(t => t.Status == status);
+        if (open) query = query.Open();
         if (priority is not null) query = query.Where(t => t.Priority == priority);
         if (!string.IsNullOrWhiteSpace(search))
         {
