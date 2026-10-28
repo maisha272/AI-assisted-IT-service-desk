@@ -11,6 +11,8 @@ import {
   type TicketStatus,
 } from '../api/types'
 import { PriorityBadge, StatusBadge } from '../components/Badges'
+import { SlaBadge } from '../components/SlaBadge'
+import { isOpen } from '../utils/sla'
 import { useAuth } from '../auth/AuthContext'
 import { categoryLabel, formatDateTime, statusLabel } from '../utils/format'
 
@@ -133,6 +135,36 @@ export default function TicketDetailPage() {
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="card">
+            <h3>SLA</h3>
+            <dl className="sla-list">
+              <dt>First response</dt>
+              <dd>
+                <SlaBadge
+                  state={ticket.sla.responseState}
+                  dueAt={isOpen(ticket.status) && !ticket.sla.firstRespondedAt ? ticket.sla.responseDueAt : undefined}
+                />
+                <div className="muted small">
+                  {ticket.sla.firstRespondedAt
+                    ? `Responded ${formatDateTime(ticket.sla.firstRespondedAt)}`
+                    : `Due ${formatDateTime(ticket.sla.responseDueAt)}`}
+                </div>
+              </dd>
+              <dt>Resolution</dt>
+              <dd>
+                <SlaBadge
+                  state={ticket.sla.resolutionState}
+                  dueAt={isOpen(ticket.status) ? ticket.sla.resolutionDueAt : undefined}
+                />
+                <div className="muted small">
+                  {ticket.resolvedAt
+                    ? `Resolved ${formatDateTime(ticket.resolvedAt)}`
+                    : `Due ${formatDateTime(ticket.sla.resolutionDueAt)}`}
+                </div>
+              </dd>
+            </dl>
           </div>
 
           {isAgent && (

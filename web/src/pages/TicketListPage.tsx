@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, type TicketFilters } from '../api/client'
 import { TICKET_PRIORITIES, TICKET_STATUSES, type TicketSummary } from '../api/types'
+import { SlaBadge } from '../components/SlaBadge'
+import { activeDeadline, isOpen } from '../utils/sla'
 import { useAuth } from '../auth/AuthContext'
 import { PriorityBadge, StatusBadge } from '../components/Badges'
 import { categoryLabel, formatDateTime, statusLabel } from '../utils/format'
@@ -74,6 +76,17 @@ export default function TicketListPage() {
             </option>
           ))}
         </select>
+        <select
+          aria-label="Filter by SLA"
+          value={filters.sla ?? ''}
+          onChange={(e) => setFilters((f) => ({ ...f, sla: (e.target.value || undefined) as TicketFilters['sla'] }))}
+        >
+          <option value="">Any SLA</option>
+          <option value="Breached">Breached</option>
+          <option value="AtRisk">At risk</option>
+          <option value="OnTrack">On track</option>
+          <option value="Met">Met</option>
+        </select>
       </div>
 
       {error && <p className="error">{error}</p>}
@@ -91,6 +104,7 @@ export default function TicketListPage() {
                 <th>Category</th>
                 <th>Priority</th>
                 <th>Status</th>
+                <th>SLA</th>
                 <th>Assignee</th>
                 <th>Created</th>
               </tr>
@@ -109,6 +123,9 @@ export default function TicketListPage() {
                   </td>
                   <td>
                     <StatusBadge status={t.status} />
+                  </td>
+                  <td>
+                    <SlaBadge state={t.sla.overall} dueAt={isOpen(t.status) ? activeDeadline(t.sla) : undefined} />
                   </td>
                   <td>{t.assignedToName ?? <span className="muted">Unassigned</span>}</td>
                   <td className="nowrap">{formatDateTime(t.createdAt)}</td>
