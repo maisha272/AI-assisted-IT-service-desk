@@ -19,6 +19,7 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddServiceDeskAuth(builder.Configuration, builder.Environment);
 builder.Services.AddScoped<DashboardService>();
+builder.Services.AddScoped<ReportService>();
 builder.Services.AddAiTriage(builder.Configuration);
 builder.Services.AddIntegrations(builder.Configuration);
 
