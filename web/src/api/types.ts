@@ -198,6 +198,24 @@ export interface InboundEmailResult {
   message: string
 }
 
+export interface Report {
+  from: string
+  to: string
+  totalTickets: number
+  overallCompliancePercent: number | null
+  byClient: {
+    clientId: number
+    clientName: string
+    total: number
+    open: number
+    resolved: number
+    resolvedWithinSla: number
+    compliancePercent: number | null
+  }[]
+  byCategory: { category: TicketCategory; count: number }[]
+  slaComplianceByWeek: { weekStart: string; resolved: number; resolvedWithinSla: number; compliancePercent: number | null }[]
+}
+
 export interface Client {
   id: number
   name: string

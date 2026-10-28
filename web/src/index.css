@@ -683,3 +683,22 @@ code {
     display: none;
   }
 }
+
+/* ---------- Reports ---------- */
+.segmented {
+  display: flex;
+  gap: 0.25rem;
+}
+.table-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem 0.5rem;
+}
+.table-card-header h3 {
+  margin: 0;
+}
+.table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

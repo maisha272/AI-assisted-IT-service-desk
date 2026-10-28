@@ -5,6 +5,7 @@ import Layout from './components/Layout'
 import DashboardPage from './pages/DashboardPage'
 import IntegrationsPage from './pages/IntegrationsPage'
 import KnowledgePage from './pages/KnowledgePage'
+import ReportsPage from './pages/ReportsPage'
 import LoginPage from './pages/LoginPage'
 import NewTicketPage from './pages/NewTicketPage'
 import TicketDetailPage from './pages/TicketDetailPage'
@@ -48,6 +49,14 @@ export default function App() {
           element={
             <RequireAuth agentOnly>
               <IntegrationsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <RequireAuth agentOnly>
+              <ReportsPage />
             </RequireAuth>
           }
         />

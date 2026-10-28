@@ -7,6 +7,7 @@ import type {
   InboundEmailResult,
   IntegrationStatus,
   NotificationLogEntry,
+  Report,
   KnowledgeArticle,
   KnowledgeSearchResult,
   LoginResponse,
@@ -113,6 +114,7 @@ export const api = {
   sendTestNotification: () => post<NotificationLogEntry>('/integrations/notifications/test', {}),
   simulateEmail: (email: { from: string; subject: string; body: string }) =>
     post<InboundEmailResult>('/integrations/email/simulate', email),
+  getReport: (days: number) => request<Report>(`/reports?days=${days}`),
   listClients: () => request<Client[]>('/clients'),
   listAgents: () => request<Agent[]>('/agents'),
 }
