@@ -12,6 +12,7 @@ import {
 } from '../api/types'
 import { PriorityBadge, StatusBadge } from '../components/Badges'
 import { SlaBadge } from '../components/SlaBadge'
+import TriagePanel from '../components/TriagePanel'
 import { isOpen } from '../utils/sla'
 import { useAuth } from '../auth/AuthContext'
 import { categoryLabel, formatDateTime, statusLabel } from '../utils/format'
@@ -77,8 +78,20 @@ export default function TicketDetailPage() {
               Raised by <strong>{ticket.createdByName}</strong> ({ticket.clientName}) on{' '}
               {formatDateTime(ticket.createdAt)} via {ticket.source === 'Email' ? 'email' : 'the portal'}
             </p>
+            {ticket.aiSummary && (
+              <p className="ai-summary">
+                <span className="ai-mark" aria-hidden>
+                  ✦
+                </span>{' '}
+                {ticket.aiSummary}
+              </p>
+            )}
             <p className="description">{ticket.description}</p>
           </div>
+
+          {isAgent && isOpen(ticket.status) && (
+            <TriagePanel ticketId={ticket.id} onApproved={() => api.getTicket(id).then(setTicket)} />
+          )}
 
           <h2>Conversation</h2>
           {ticket.comments.length === 0 && <p className="muted">No comments yet.</p>}
@@ -211,6 +224,16 @@ export default function TicketDetailPage() {
                   ))}
                 </select>
               </label>
+            </div>
+          )}
+
+          {isAgent && !isOpen(ticket.status) && (
+            <div className="card">
+              <h3>Knowledge base</h3>
+              <p className="muted small">Fixed something new? Save it so AI triage can suggest it next time.</p>
+              <Link className="button" to={`/knowledge?fromTicket=${ticket.id}`}>
+                Save fix to knowledge base
+              </Link>
             </div>
           )}
 

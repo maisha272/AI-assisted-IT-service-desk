@@ -3,6 +3,7 @@ import { RequireAuth } from './auth/RequireAuth'
 import { useAuth } from './auth/AuthContext'
 import Layout from './components/Layout'
 import DashboardPage from './pages/DashboardPage'
+import KnowledgePage from './pages/KnowledgePage'
 import LoginPage from './pages/LoginPage'
 import NewTicketPage from './pages/NewTicketPage'
 import TicketDetailPage from './pages/TicketDetailPage'
@@ -30,6 +31,14 @@ export default function App() {
           element={
             <RequireAuth agentOnly>
               <DashboardPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/knowledge"
+          element={
+            <RequireAuth agentOnly>
+              <KnowledgePage />
             </RequireAuth>
           }
         />

@@ -592,3 +592,72 @@ code {
   overflow: hidden;
   clip: rect(0 0 0 0);
 }
+
+/* ---------- AI triage ---------- */
+.ai-mark {
+  color: #7a4ddb;
+}
+
+.triage-panel {
+  border-color: #d9ccf6;
+  background: linear-gradient(180deg, #faf7ff 0%, #ffffff 120px);
+}
+.triage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.triage-header h3 {
+  margin: 0;
+}
+.triage-panel input {
+  width: 100%;
+}
+.triage-panel select {
+  width: 100%;
+}
+.rationale {
+  font-style: italic;
+  color: #4b5262;
+  margin-top: 0;
+}
+.related ul {
+  margin: 0.25rem 0 0.75rem;
+  padding-left: 1.2rem;
+}
+.triage-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ai-summary {
+  background: #f6f2ff;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-weight: 500;
+}
+
+/* ---------- Knowledge base ---------- */
+.kb-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1rem;
+}
+.kb-article {
+  margin: 0;
+}
+.kb-article p {
+  margin: 0.4rem 0;
+  font-size: 0.92rem;
+}
+.kb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.search-results {
+  margin: 0;
+  padding-left: 1.2rem;
+}

@@ -46,6 +46,11 @@ export default function DashboardPage() {
           to="/tickets?sla=AtRisk"
         />
         <StatTile
+          label="AI suggestions to review"
+          value={data.pendingTriageSuggestions}
+          hint="Awaiting agent approval"
+        />
+        <StatTile
           label="Avg resolution time"
           value={data.averageResolutionMinutesLast30Days != null ? formatDuration(data.averageResolutionMinutesLast30Days) : '—'}
           hint={`${data.resolvedLast30Days} resolved in last 30 days`}
