@@ -17,6 +17,7 @@ export default function Layout() {
           </NavLink>
           <NavLink to="/tickets/new">New ticket</NavLink>
           {isAgent && <NavLink to="/knowledge">Knowledge base</NavLink>}
+          {isAgent && <NavLink to="/integrations">Integrations</NavLink>}
         </nav>
         {user && (
           <div className="user-menu">
