@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using ServiceDesk.Api.Data;
+using ServiceDesk.Api.Services;
 using ServiceDesk.Api.Services.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,7 @@ builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddServiceDeskAuth(builder.Configuration, builder.Environment);
+builder.Services.AddScoped<DashboardService>();
 
 var app = builder.Build();
 
