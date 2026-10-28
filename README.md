@@ -7,8 +7,6 @@ before anything changes.
 
 [![CI/CD](https://github.com/maisha272/AI-assisted-IT-service-desk/actions/workflows/ci.yml/badge.svg)](https://github.com/maisha272/AI-assisted-IT-service-desk/actions/workflows/ci.yml)
 
-**Live demo:** _add the Azure URL here once deployed_ (see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)) — the free tier
-sleeps when idle, so the first load can take ~30 seconds.
 
 | Demo account | Email | Password |
 |---|---|---|
