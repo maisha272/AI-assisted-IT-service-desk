@@ -14,6 +14,7 @@ export default function TicketListPage() {
   const [searchParams] = useSearchParams()
   const [filters, setFilters] = useState<TicketFilters>(() => ({
     status: (searchParams.get('status') ?? undefined) as TicketFilters['status'],
+    open: searchParams.get('open') === 'true' || undefined,
     priority: (searchParams.get('priority') ?? undefined) as TicketFilters['priority'],
     sla: (searchParams.get('sla') ?? undefined) as TicketFilters['sla'],
   }))
@@ -58,10 +59,18 @@ export default function TicketListPage() {
         />
         <select
           aria-label="Filter by status"
-          value={filters.status ?? ''}
-          onChange={(e) => setFilters((f) => ({ ...f, status: (e.target.value || undefined) as TicketFilters['status'] }))}
+          value={filters.open ? 'open' : (filters.status ?? '')}
+          onChange={(e) => {
+            const value = e.target.value
+            setFilters((f) => ({
+              ...f,
+              open: value === 'open' || undefined,
+              status: value && value !== 'open' ? (value as TicketFilters['status']) : undefined,
+            }))
+          }}
         >
           <option value="">All statuses</option>
+          <option value="open">All open</option>
           {TICKET_STATUSES.map((s) => (
             <option key={s} value={s}>
               {statusLabel(s)}
