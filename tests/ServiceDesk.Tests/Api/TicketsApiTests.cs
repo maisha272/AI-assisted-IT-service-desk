@@ -106,6 +106,17 @@ public class TicketsApiTests(ServiceDeskApiFactory factory) : IClassFixture<Serv
     }
 
     [Fact]
+    public async Task Open_filter_excludes_resolved_and_closed_tickets()
+    {
+        var all = await _client.GetFromJsonAsync<List<TicketSummaryDto>>("/api/tickets?sla=Breached", Json);
+        var open = await _client.GetFromJsonAsync<List<TicketSummaryDto>>("/api/tickets?sla=Breached&open=true", Json);
+
+        Assert.NotEmpty(open!);
+        Assert.True(open!.Count < all!.Count); // seed data has tickets that were resolved late
+        Assert.All(open, t => Assert.DoesNotContain(t.Status, new[] { TicketStatus.Resolved, TicketStatus.Closed }));
+    }
+
+    [Fact]
     public async Task Unknown_ticket_returns_404()
     {
         var response = await _client.GetAsync("/api/tickets/999999");
