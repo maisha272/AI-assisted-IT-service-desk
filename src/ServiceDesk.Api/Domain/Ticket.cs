@@ -6,6 +6,9 @@ public class Ticket
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
 
+    /// <summary>One-line summary from AI triage, set only once an agent approves it.</summary>
+    public string? AiSummary { get; set; }
+
     public TicketStatus Status { get; set; } = TicketStatus.New;
     public TicketPriority Priority { get; set; } = TicketPriority.Medium;
     public TicketCategory Category { get; set; } = TicketCategory.Other;
