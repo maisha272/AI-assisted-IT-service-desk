@@ -71,6 +71,9 @@ public static class SlaPolicy
         var targets = For(ticket.Priority);
         ticket.ResponseDueAt = ticket.CreatedAt + targets.Response;
         ticket.ResolutionDueAt = ticket.CreatedAt + targets.Resolution;
+        // New deadlines: re-arm the at-risk/breach alerts so they fire against the new times.
+        ticket.AtRiskNotifiedAt = null;
+        ticket.BreachNotifiedAt = null;
     }
 
     /// <summary>Records the first agent action, which stops the response clock.</summary>

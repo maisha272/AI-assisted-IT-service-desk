@@ -142,6 +142,8 @@ public static class SeedData
                 UpdatedAt = createdAt,
             };
             SlaPolicy.ApplyDeadlines(ticket);
+            // Historical tickets were announced when they arrived; don't flood Teams on first start.
+            ticket.NewTicketNotifiedAt = createdAt;
             client.Tickets.Add(ticket);
 
             if (isNearBreach)

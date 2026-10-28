@@ -37,6 +37,12 @@ public class Ticket
     /// <summary>First agent action (public reply or status change). Stops the response clock.</summary>
     public DateTime? FirstRespondedAt { get; set; }
 
+    // ---- Notification markers (see Services/Integrations/NotificationDispatcher.cs) ----
+    // Null = not yet announced. Each notification is sent once, then its marker is set.
+    public DateTime? NewTicketNotifiedAt { get; set; }
+    public DateTime? AtRiskNotifiedAt { get; set; }
+    public DateTime? BreachNotifiedAt { get; set; }
+
     public List<Comment> Comments { get; set; } = [];
     public List<TicketStatusChange> StatusChanges { get; set; } = [];
 }
