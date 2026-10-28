@@ -13,6 +13,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<TicketStatusChange> TicketStatusChanges => Set<TicketStatusChange>();
     public DbSet<KnowledgeArticle> KnowledgeArticles => Set<KnowledgeArticle>();
     public DbSet<TriageSuggestion> TriageSuggestions => Set<TriageSuggestion>();
+    public DbSet<NotificationLog> NotificationLogs => Set<NotificationLog>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -104,6 +105,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasOne(s => s.ReviewedBy).WithMany()
                 .HasForeignKey(s => s.ReviewedById).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(s => new { s.TicketId, s.Status });
+        });
+
+        modelBuilder.Entity<NotificationLog>(e =>
+        {
+            e.Property(n => n.Channel).HasMaxLength(32);
+            e.Property(n => n.Event).HasConversion<string>().HasMaxLength(32);
+            e.Property(n => n.Message).HasMaxLength(500);
+            e.Property(n => n.Error).HasMaxLength(500);
+            e.HasIndex(n => n.CreatedAt);
         });
 
         modelBuilder.Entity<TicketStatusChange>(e =>

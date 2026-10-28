@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using ServiceDesk.Api.Data;
 using ServiceDesk.Api.Services;
 using ServiceDesk.Api.Services.Auth;
+using ServiceDesk.Api.Services.Integrations;
 using ServiceDesk.Api.Services.Triage;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,7 @@ builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddServiceDeskAuth(builder.Configuration, builder.Environment);
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddAiTriage(builder.Configuration);
+builder.Services.AddIntegrations(builder.Configuration);
 
 var app = builder.Build();
 

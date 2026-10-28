@@ -31,7 +31,9 @@ public class AuthController(AppDbContext db, IPasswordHasher<User> hasher, Token
         var user = await db.Users.Include(u => u.Client).FirstOrDefaultAsync(u => u.Email == email, ct);
 
         // Same response for "no such user" and "wrong password", so attackers can't discover valid emails.
-        if (user is null || hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
+        // Users auto-created from inbound email have no password and can't sign in.
+        if (user is null || string.IsNullOrEmpty(user.PasswordHash)
+            || hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
             return Problem("Invalid email or password.", statusCode: StatusCodes.Status401Unauthorized);
 
         var (token, expiresAt) = tokens.CreateToken(user);
