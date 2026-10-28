@@ -1,23 +1,33 @@
+using System.Text.Json.Serialization;
+using ServiceDesk.Api.Data;
+using ServiceDesk.Api.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services
+    .AddControllers()
+    // Send enums as strings ("InProgress") rather than numbers, so the API is self-describing.
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
+
+// TimeProvider is .NET's injectable clock. Tests swap in a fake clock to check time-based rules.
+builder.Services.AddSingleton(TimeProvider.System);
+
+builder.Services.AddDatabase(builder.Configuration);
+builder.Services.AddScoped<ICurrentUser, FirstAgentCurrentUser>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+await app.InitialiseDatabaseAsync();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
+
+// Exposes the auto-generated Program class to the test project (WebApplicationFactory<Program>).
+public partial class Program;
