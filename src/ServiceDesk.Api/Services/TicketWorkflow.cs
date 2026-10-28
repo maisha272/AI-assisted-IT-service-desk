@@ -55,6 +55,8 @@ public static class TicketWorkflow
 
         ticket.Status = to;
         ticket.UpdatedAt = now;
+        if (actor.Role == UserRole.Agent)
+            SlaPolicy.RecordAgentResponse(ticket, now);
 
         switch (to)
         {

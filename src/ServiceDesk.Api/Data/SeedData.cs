@@ -70,16 +70,6 @@ public static class SeedData
         "It was fine on Friday.",
     ];
 
-    // Rough resolution targets used to make the history realistic (most tickets resolved in time,
-    // some late). These are the same numbers as the SLA policy introduced later.
-    private static readonly Dictionary<TicketPriority, double> ResolutionHours = new()
-    {
-        [TicketPriority.Critical] = 4,
-        [TicketPriority.High] = 24,
-        [TicketPriority.Medium] = 72,
-        [TicketPriority.Low] = 120,
-    };
-
     /// <param name="hashPassword">Turns the demo password into a stored hash for each user.</param>
     public static void Populate(AppDbContext db, DateTime now, Func<User, string> hashPassword)
     {
@@ -135,6 +125,7 @@ public static class SeedData
                 CreatedAt = createdAt,
                 UpdatedAt = createdAt,
             };
+            SlaPolicy.ApplyDeadlines(ticket);
             client.Tickets.Add(ticket);
 
             if (isRecent)
@@ -189,7 +180,7 @@ public static class SeedData
         var agent = agents[rng.Next(agents.Count)];
         ticket.AssignedTo = agent;
 
-        var target = ResolutionHours[ticket.Priority];
+        var target = SlaPolicy.For(ticket.Priority).Resolution.TotalHours;
         // ~85% resolved within target, ~15% late (so SLA reports have something to show).
         var factor = rng.NextDouble() < 0.85 ? 0.15 + rng.NextDouble() * 0.8 : 1.05 + rng.NextDouble() * 0.8;
         var resolvedAt = ticket.CreatedAt.AddHours(target * factor);

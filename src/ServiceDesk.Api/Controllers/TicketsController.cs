@@ -20,6 +20,7 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
         [FromQuery] TicketStatus? status,
         [FromQuery] TicketPriority? priority,
         [FromQuery] string? search,
+        [FromQuery] SlaState? sla,
         CancellationToken ct)
     {
         var user = await currentUser.GetAsync(ct);
@@ -39,7 +40,12 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
             .Take(MaxResults)
             .ToListAsync(ct);
 
-        return tickets.Select(t => t.ToSummary()).ToList();
+        var now = Now;
+        var results = tickets.Select(t => t.ToSummary(now));
+        // SLA state depends on "now", so it is filtered after loading rather than in SQL.
+        // Fine at this scale (results are capped at MaxResults).
+        if (sla is not null) results = results.Where(t => t.Sla.Overall == sla);
+        return results.ToList();
     }
 
     [HttpGet("{id:int}")]
@@ -47,7 +53,7 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
     {
         var user = await currentUser.GetAsync(ct);
         var ticket = await LoadVisibleTicket(id, user, ct);
-        return ticket is null ? NotFound() : ticket.ToDetail(user);
+        return ticket is null ? NotFound() : ticket.ToDetail(user, Now);
     }
 
     [HttpPost]
@@ -70,7 +76,7 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
             clientId = request.ClientId.Value;
         }
 
-        var now = clock.GetUtcNow().UtcDateTime;
+        var now = Now;
         var ticket = new Ticket
         {
             Title = request.Title.Trim(),
@@ -83,11 +89,12 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
             CreatedAt = now,
             UpdatedAt = now,
         };
+        SlaPolicy.ApplyDeadlines(ticket);
         db.Tickets.Add(ticket);
         await db.SaveChangesAsync(ct);
 
         var created = (await LoadVisibleTicket(ticket.Id, user, ct))!;
-        return CreatedAtAction(nameof(Get), new { id = ticket.Id }, created.ToDetail(user));
+        return CreatedAtAction(nameof(Get), new { id = ticket.Id }, created.ToDetail(user, now));
     }
 
     [HttpPost("{id:int}/comments")]
@@ -101,7 +108,7 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
         if (request.IsInternal && user.Role != UserRole.Agent)
             return Forbid();
 
-        var now = clock.GetUtcNow().UtcDateTime;
+        var now = Now;
         ticket.Comments.Add(new Comment
         {
             AuthorId = user.Id,
@@ -111,13 +118,15 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
             CreatedAt = now,
         });
         ticket.UpdatedAt = now;
+        if (user.Role == UserRole.Agent && !request.IsInternal)
+            SlaPolicy.RecordAgentResponse(ticket, now);
 
         // A client replying to a ticket that was waiting on them puts it back in the agents' queue.
         if (user.Role == UserRole.ClientStaff && ticket.Status == TicketStatus.Waiting)
             TicketWorkflow.Transition(ticket, TicketStatus.InProgress, user, now);
 
         await db.SaveChangesAsync(ct);
-        return ticket.ToDetail(user);
+        return ticket.ToDetail(user, now);
     }
 
     [HttpPost("{id:int}/status")]
@@ -129,7 +138,7 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
 
         try
         {
-            TicketWorkflow.Transition(ticket, request.Status, user, clock.GetUtcNow().UtcDateTime);
+            TicketWorkflow.Transition(ticket, request.Status, user, Now);
         }
         catch (InvalidTransitionException ex)
         {
@@ -137,7 +146,7 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
         }
 
         await db.SaveChangesAsync(ct);
-        return ticket.ToDetail(user);
+        return ticket.ToDetail(user, Now);
     }
 
     [HttpPatch("{id:int}")]
@@ -148,12 +157,17 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
         var ticket = await LoadVisibleTicket(id, user, ct);
         if (ticket is null) return NotFound();
 
-        if (request.Priority is not null) ticket.Priority = request.Priority.Value;
+        if (request.Priority is not null && request.Priority != ticket.Priority)
+        {
+            ticket.Priority = request.Priority.Value;
+            // New priority, new deadlines (still measured from when the ticket was raised).
+            SlaPolicy.ApplyDeadlines(ticket);
+        }
         if (request.Category is not null) ticket.Category = request.Category.Value;
-        ticket.UpdatedAt = clock.GetUtcNow().UtcDateTime;
+        ticket.UpdatedAt = Now;
 
         await db.SaveChangesAsync(ct);
-        return ticket.ToDetail(user);
+        return ticket.ToDetail(user, Now);
     }
 
     [HttpPost("{id:int}/assign")]
@@ -175,11 +189,13 @@ public class TicketsController(AppDbContext db, ICurrentUser currentUser, TimePr
             ticket.AssignedTo = agent;
         }
         ticket.AssignedToId = request.AgentId;
-        ticket.UpdatedAt = clock.GetUtcNow().UtcDateTime;
+        ticket.UpdatedAt = Now;
 
         await db.SaveChangesAsync(ct);
-        return ticket.ToDetail(user);
+        return ticket.ToDetail(user, Now);
     }
+
+    private DateTime Now => clock.GetUtcNow().UtcDateTime;
 
     private Task<Ticket?> LoadVisibleTicket(int id, User user, CancellationToken ct) =>
         db.Tickets.VisibleTo(user)
