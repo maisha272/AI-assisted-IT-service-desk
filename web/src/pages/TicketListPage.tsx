@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { api, type TicketFilters } from '../api/client'
 import { TICKET_PRIORITIES, TICKET_STATUSES, type TicketSummary } from '../api/types'
 import { SlaBadge } from '../components/SlaBadge'
@@ -10,7 +10,13 @@ import { categoryLabel, formatDateTime, statusLabel } from '../utils/format'
 
 export default function TicketListPage() {
   const { isAgent } = useAuth()
-  const [filters, setFilters] = useState<TicketFilters>({})
+  // Initial filters can come from the URL, e.g. /tickets?sla=Breached (linked from the dashboard).
+  const [searchParams] = useSearchParams()
+  const [filters, setFilters] = useState<TicketFilters>(() => ({
+    status: (searchParams.get('status') ?? undefined) as TicketFilters['status'],
+    priority: (searchParams.get('priority') ?? undefined) as TicketFilters['priority'],
+    sla: (searchParams.get('sla') ?? undefined) as TicketFilters['sla'],
+  }))
   const [searchInput, setSearchInput] = useState('')
   const [tickets, setTickets] = useState<TicketSummary[] | null>(null)
   const [error, setError] = useState<string | null>(null)

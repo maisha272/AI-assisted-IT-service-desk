@@ -111,6 +111,19 @@ export interface CreateTicketRequest {
   clientId?: number
 }
 
+export interface Dashboard {
+  openTickets: number
+  unassignedTickets: number
+  breachedTickets: number
+  atRiskTickets: number
+  openByPriority: { priority: TicketPriority; count: number }[]
+  openByStatus: { status: TicketStatus; count: number }[]
+  resolvedLast30Days: number
+  averageResolutionMinutesLast30Days: number | null
+  slaCompliancePercentLast30Days: number | null
+  needsAttention: TicketSummary[]
+}
+
 export interface Client {
   id: number
   name: string
