@@ -8,13 +8,12 @@ import {
   type TicketCategory,
   type TicketPriority,
 } from '../api/types'
+import { useAuth } from '../auth/AuthContext'
 import { categoryLabel } from '../utils/format'
-
-// Placeholder until authentication is added: the first slice treats everyone as an agent.
-const isAgent = true
 
 export default function NewTicketPage() {
   const navigate = useNavigate()
+  const { isAgent } = useAuth()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState<TicketPriority>('Medium')
@@ -26,7 +25,7 @@ export default function NewTicketPage() {
 
   useEffect(() => {
     if (isAgent) api.listClients().then(setClients).catch(() => setClients([]))
-  }, [])
+  }, [isAgent])
 
   async function submit(e: FormEvent) {
     e.preventDefault()

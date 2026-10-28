@@ -2,6 +2,7 @@ import type {
   Agent,
   Client,
   CreateTicketRequest,
+  LoginResponse,
   TicketDetail,
   TicketPriority,
   TicketStatus,
@@ -19,11 +20,27 @@ export class ApiError extends Error {
   }
 }
 
+// The JWT lives in memory here (and in localStorage via AuthContext) and is sent on every request.
+let authToken: string | null = null
+let onUnauthorized: (() => void) | null = null
+
+export const setAuthToken = (token: string | null) => {
+  authToken = token
+}
+
+export const setUnauthorizedHandler = (handler: (() => void) | null) => {
+  onUnauthorized = handler
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
   if (init.body) headers.set('Content-Type', 'application/json')
+  if (authToken) headers.set('Authorization', `Bearer ${authToken}`)
 
   const response = await fetch(`/api${path}`, { ...init, headers })
+
+  // An expired/invalid token on a normal request means the session is over.
+  if (response.status === 401 && authToken) onUnauthorized?.()
 
   if (!response.ok) {
     let message = `Request failed (${response.status})`
@@ -54,6 +71,7 @@ export interface TicketFilters {
 }
 
 export const api = {
+  login: (email: string, password: string) => post<LoginResponse>('/auth/login', { email, password }),
   listTickets(filters: TicketFilters = {}) {
     const params = new URLSearchParams()
     for (const [key, value] of Object.entries(filters)) if (value) params.set(key, value)

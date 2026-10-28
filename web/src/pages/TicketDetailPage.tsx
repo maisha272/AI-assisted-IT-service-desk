@@ -11,13 +11,12 @@ import {
   type TicketStatus,
 } from '../api/types'
 import { PriorityBadge, StatusBadge } from '../components/Badges'
+import { useAuth } from '../auth/AuthContext'
 import { categoryLabel, formatDateTime, statusLabel } from '../utils/format'
-
-// Placeholder until authentication is added: the first slice treats everyone as an agent.
-const isAgent = true
 
 export default function TicketDetailPage() {
   const id = Number(useParams().id)
+  const { isAgent } = useAuth()
   const [ticket, setTicket] = useState<TicketDetail | null>(null)
   const [agents, setAgents] = useState<Agent[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -28,7 +27,7 @@ export default function TicketDetailPage() {
   useEffect(() => {
     api.getTicket(id).then(setTicket).catch((e: Error) => setError(e.message))
     if (isAgent) api.listAgents().then(setAgents).catch(() => setAgents([]))
-  }, [id])
+  }, [id, isAgent])
 
   /** Runs an API call that returns the updated ticket, with shared busy/error handling. */
   async function run(action: () => Promise<TicketDetail>) {

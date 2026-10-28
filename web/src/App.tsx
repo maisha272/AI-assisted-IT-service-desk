@@ -1,5 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { RequireAuth } from './auth/RequireAuth'
 import Layout from './components/Layout'
+import LoginPage from './pages/LoginPage'
 import NewTicketPage from './pages/NewTicketPage'
 import TicketDetailPage from './pages/TicketDetailPage'
 import TicketListPage from './pages/TicketListPage'
@@ -7,7 +9,14 @@ import TicketListPage from './pages/TicketListPage'
 export default function App() {
   return (
     <Routes>
-      <Route element={<Layout />}>
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        element={
+          <RequireAuth>
+            <Layout />
+          </RequireAuth>
+        }
+      >
         <Route index element={<Navigate to="/tickets" replace />} />
         <Route path="/tickets" element={<TicketListPage />} />
         <Route path="/tickets/new" element={<NewTicketPage />} />

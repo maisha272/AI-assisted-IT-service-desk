@@ -21,6 +21,21 @@ export type TicketCategory = (typeof TICKET_CATEGORIES)[number]
 export type UserRole = 'ClientStaff' | 'Agent'
 export type TicketSource = 'Portal' | 'Email'
 
+export interface CurrentUser {
+  id: number
+  email: string
+  displayName: string
+  role: UserRole
+  clientId: number | null
+  clientName: string | null
+}
+
+export interface LoginResponse {
+  token: string
+  expiresAt: string
+  user: CurrentUser
+}
+
 export interface TicketSummary {
   id: number
   title: string
