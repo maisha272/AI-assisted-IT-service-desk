@@ -1,20 +1,20 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using ServiceDesk.Api.Domain;
 using ServiceDesk.Api.Dtos;
 
 namespace ServiceDesk.Tests.Api;
 
-public class TicketsApiTests(ServiceDeskApiFactory factory) : IClassFixture<ServiceDeskApiFactory>
+/// <summary>Ticket endpoints, exercised as a support agent.</summary>
+public class TicketsApiTests(ServiceDeskApiFactory factory) : IClassFixture<ServiceDeskApiFactory>, IAsyncLifetime
 {
-    internal static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
-    {
-        Converters = { new JsonStringEnumConverter() },
-    };
+    private static readonly JsonSerializerOptions Json = ServiceDeskApiFactory.Json;
+    private HttpClient _client = null!;
 
-    private readonly HttpClient _client = factory.CreateClient();
+    public async Task InitializeAsync() => _client = await factory.CreateClientAsAsync(ServiceDeskApiFactory.AgentEmail);
+
+    public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
     public async Task List_returns_seeded_tickets()
