@@ -4,7 +4,11 @@ import type {
   Client,
   CreateTicketRequest,
   Dashboard,
+  KnowledgeArticle,
+  KnowledgeSearchResult,
   LoginResponse,
+  TriageDecision,
+  TriageSuggestion,
   TicketDetail,
   TicketPriority,
   TicketStatus,
@@ -92,6 +96,14 @@ export const api = {
   assignTicket: (id: number, agentId: number | null) =>
     post<TicketDetail>(`/tickets/${id}/assign`, { agentId }),
   getDashboard: () => request<Dashboard>('/dashboard'),
+  /** Latest AI suggestion for a ticket, or null if triage hasn't produced one yet (HTTP 204). */
+  getTriage: async (ticketId: number) => (await request<TriageSuggestion | undefined>(`/tickets/${ticketId}/triage`)) ?? null,
+  runTriage: (ticketId: number) => post<TriageSuggestion>(`/tickets/${ticketId}/triage`, {}),
+  approveTriage: (id: number, decision: TriageDecision) => post<TriageSuggestion>(`/triage/${id}/approve`, decision),
+  rejectTriage: (id: number, reason?: string) => post<TriageSuggestion>(`/triage/${id}/reject`, { reason }),
+  listKnowledge: () => request<KnowledgeArticle[]>('/knowledge'),
+  searchKnowledge: (q: string) => request<KnowledgeSearchResult[]>(`/knowledge/search?q=${encodeURIComponent(q)}`),
+  createKnowledge: (body: Omit<KnowledgeArticle, 'id' | 'createdAt'>) => post<KnowledgeArticle>('/knowledge', body),
   listClients: () => request<Client[]>('/clients'),
   listAgents: () => request<Agent[]>('/agents'),
 }

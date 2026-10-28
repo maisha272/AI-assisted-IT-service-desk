@@ -84,6 +84,7 @@ export interface TicketDetail {
   id: number
   title: string
   description: string
+  aiSummary: string | null
   status: TicketStatus
   priority: TicketPriority
   category: TicketCategory
@@ -118,10 +119,60 @@ export interface Dashboard {
   atRiskTickets: number
   openByPriority: { priority: TicketPriority; count: number }[]
   openByStatus: { status: TicketStatus; count: number }[]
+  pendingTriageSuggestions: number
   resolvedLast30Days: number
   averageResolutionMinutesLast30Days: number | null
   slaCompliancePercentLast30Days: number | null
   needsAttention: TicketSummary[]
+}
+
+export type TriageStatus = 'Pending' | 'Approved' | 'Rejected'
+
+export interface TriageSuggestion {
+  id: number
+  ticketId: number
+  status: TriageStatus
+  suggestedCategory: TicketCategory
+  suggestedPriority: TicketPriority
+  summary: string
+  steps: string[]
+  rationale: string
+  confidence: 'low' | 'medium' | 'high'
+  relatedArticles: { id: number; title: string; score: number }[]
+  provider: string
+  createdAt: string
+  reviewedByName: string | null
+  reviewedAt: string | null
+  finalCategory: TicketCategory | null
+  finalPriority: TicketPriority | null
+  finalSummary: string | null
+  finalSteps: string[] | null
+  wasEdited: boolean
+  rejectionReason: string | null
+}
+
+export interface TriageDecision {
+  category: TicketCategory
+  priority: TicketPriority
+  summary: string
+  steps: string[]
+}
+
+export interface KnowledgeArticle {
+  id: number
+  title: string
+  category: TicketCategory
+  problem: string
+  resolution: string
+  sourceTicketId: number | null
+  createdAt: string
+}
+
+export interface KnowledgeSearchResult {
+  id: number
+  title: string
+  category: TicketCategory
+  score: number
 }
 
 export interface Client {

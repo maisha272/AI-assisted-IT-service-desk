@@ -16,6 +16,7 @@ export default function Layout() {
             {isAgent ? 'Tickets' : 'My tickets'}
           </NavLink>
           <NavLink to="/tickets/new">New ticket</NavLink>
+          {isAgent && <NavLink to="/knowledge">Knowledge base</NavLink>}
         </nav>
         {user && (
           <div className="user-menu">
