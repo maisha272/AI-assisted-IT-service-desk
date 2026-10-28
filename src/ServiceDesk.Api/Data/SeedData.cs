@@ -97,6 +97,16 @@ public static class SeedData
         db.Users.AddRange(agents);
         db.Clients.AddRange(clients);
 
+        // The knowledge base of past fixes that AI triage retrieves from.
+        db.KnowledgeArticles.AddRange(Templates.Select((t, i) => new KnowledgeArticle
+        {
+            Title = t.Title,
+            Category = t.Category,
+            Problem = t.Description,
+            Resolution = t.Fix,
+            CreatedAt = now.AddDays(-200 + i),
+        }));
+
         const int recentOpenTickets = 14;
         const int historicalTickets = 70;
 

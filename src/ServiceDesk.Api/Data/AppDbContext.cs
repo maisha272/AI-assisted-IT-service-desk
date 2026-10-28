@@ -11,6 +11,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<TicketStatusChange> TicketStatusChanges => Set<TicketStatusChange>();
+    public DbSet<KnowledgeArticle> KnowledgeArticles => Set<KnowledgeArticle>();
+    public DbSet<TriageSuggestion> TriageSuggestions => Set<TriageSuggestion>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -44,6 +46,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.Property(t => t.Title).HasMaxLength(200);
             e.Property(t => t.Description).HasMaxLength(8000);
+            e.Property(t => t.AiSummary).HasMaxLength(300);
             // Enums stored as readable strings ("InProgress") instead of ints, so the data survives
             // enum reordering and is easy to read when querying the database directly.
             e.Property(t => t.Status).HasConversion<string>().HasMaxLength(32);
@@ -69,6 +72,38 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(c => c.TicketId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(c => c.Author).WithMany()
                 .HasForeignKey(c => c.AuthorId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<KnowledgeArticle>(e =>
+        {
+            e.Property(a => a.Title).HasMaxLength(200);
+            e.Property(a => a.Category).HasConversion<string>().HasMaxLength(32);
+            e.Property(a => a.Problem).HasMaxLength(4000);
+            e.Property(a => a.Resolution).HasMaxLength(4000);
+            e.Property(a => a.EmbeddingModel).HasMaxLength(100);
+            // EmbeddingJson has no max length: 1536 floats as JSON is ~30KB (nvarchar(max) on SQL Server).
+        });
+
+        modelBuilder.Entity<TriageSuggestion>(e =>
+        {
+            e.Property(s => s.Status).HasConversion<string>().HasMaxLength(32);
+            e.Property(s => s.SuggestedCategory).HasConversion<string>().HasMaxLength(32);
+            e.Property(s => s.SuggestedPriority).HasConversion<string>().HasMaxLength(32);
+            e.Property(s => s.FinalCategory).HasConversion<string>().HasMaxLength(32);
+            e.Property(s => s.FinalPriority).HasConversion<string>().HasMaxLength(32);
+            e.Property(s => s.Summary).HasMaxLength(300);
+            e.Property(s => s.FinalSummary).HasMaxLength(300);
+            e.Property(s => s.Steps).HasMaxLength(4000);
+            e.Property(s => s.FinalSteps).HasMaxLength(4000);
+            e.Property(s => s.Rationale).HasMaxLength(500);
+            e.Property(s => s.Confidence).HasMaxLength(16);
+            e.Property(s => s.Provider).HasMaxLength(100);
+            e.Property(s => s.RejectionReason).HasMaxLength(500);
+            e.HasOne(s => s.Ticket).WithMany()
+                .HasForeignKey(s => s.TicketId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(s => s.ReviewedBy).WithMany()
+                .HasForeignKey(s => s.ReviewedById).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(s => new { s.TicketId, s.Status });
         });
 
         modelBuilder.Entity<TicketStatusChange>(e =>
