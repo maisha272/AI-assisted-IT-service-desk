@@ -20,6 +20,7 @@ public class ServiceDeskApiFactory : WebApplicationFactory<Program>
     public const string AgentEmail = SeedData.DemoAgentEmail;
     public const string ClientEmail = SeedData.DemoClientEmail;
     public const string OtherClientEmail = "mia@harbourlogistics.test";
+    public const string InboundEmailSecret = "test-inbound-secret";
 
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
@@ -39,6 +40,9 @@ public class ServiceDeskApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("Database:Provider", "Sqlite");
         builder.UseSetting("Database:RecreateOnStartup", "true");
         builder.UseSetting("ConnectionStrings:Default", $"Data Source={_dbPath}");
+        builder.UseSetting("Integrations:InboundEmailSecret", InboundEmailSecret);
+        builder.UseSetting("Integrations:TeamsWebhookUrl", "");
+        builder.UseSetting("AI:Provider", "Mock");
     }
 
     /// <summary>An HttpClient already signed in as the given demo user.</summary>
