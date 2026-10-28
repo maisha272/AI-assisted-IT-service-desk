@@ -59,6 +59,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(t => t.AssignedToId).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(t => t.Status);
             e.HasIndex(t => t.ClientId);
+            e.HasIndex(t => t.ResolutionDueAt);
         });
 
         modelBuilder.Entity<Comment>(e =>

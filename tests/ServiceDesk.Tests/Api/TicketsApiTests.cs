@@ -85,6 +85,27 @@ public class TicketsApiTests(ServiceDeskApiFactory factory) : IClassFixture<Serv
     }
 
     [Fact]
+    public async Task New_ticket_gets_sla_deadlines_from_its_priority()
+    {
+        var response = await _client.PostAsJsonAsync("/api/tickets",
+            new CreateTicketRequest("Server room alarm", "Temperature alarm in the server room.",
+                TicketPriority.Critical, TicketCategory.Hardware, ClientId: 1), Json);
+        var ticket = await response.Content.ReadFromJsonAsync<TicketDetailDto>(Json);
+
+        Assert.Equal(ticket!.CreatedAt.AddHours(1), ticket.Sla.ResponseDueAt);
+        Assert.Equal(ticket.CreatedAt.AddHours(4), ticket.Sla.ResolutionDueAt);
+        Assert.Equal(ServiceDesk.Api.Services.SlaState.OnTrack, ticket.Sla.Overall);
+    }
+
+    [Fact]
+    public async Task List_filters_by_sla_state()
+    {
+        var breached = await _client.GetFromJsonAsync<List<TicketSummaryDto>>("/api/tickets?sla=Breached", Json);
+        Assert.NotEmpty(breached!);
+        Assert.All(breached!, t => Assert.Equal(ServiceDesk.Api.Services.SlaState.Breached, t.Sla.Overall));
+    }
+
+    [Fact]
     public async Task Unknown_ticket_returns_404()
     {
         var response = await _client.GetAsync("/api/tickets/999999");

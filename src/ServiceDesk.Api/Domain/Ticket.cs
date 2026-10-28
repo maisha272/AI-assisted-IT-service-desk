@@ -25,6 +25,15 @@ public class Ticket
     public DateTime? ResolvedAt { get; set; }
     public DateTime? ClosedAt { get; set; }
 
+    // ---- SLA (see Services/SlaPolicy.cs) ----
+    // Deadlines are stored (not just calculated) so overdue/near-breach tickets can be queried in SQL
+    // and reports can compare resolution time against the deadline that applied at the time.
+    public DateTime ResponseDueAt { get; set; }
+    public DateTime ResolutionDueAt { get; set; }
+
+    /// <summary>First agent action (public reply or status change). Stops the response clock.</summary>
+    public DateTime? FirstRespondedAt { get; set; }
+
     public List<Comment> Comments { get; set; } = [];
     public List<TicketStatusChange> StatusChanges { get; set; } = [];
 }

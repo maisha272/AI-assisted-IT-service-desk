@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using ServiceDesk.Api.Domain;
+using ServiceDesk.Api.Services;
 
 namespace ServiceDesk.Api.Dtos;
 
@@ -19,7 +20,16 @@ public record TicketSummaryDto(
     string CreatedByName,
     string? AssignedToName,
     DateTime CreatedAt,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt,
+    SlaDto Sla);
+
+public record SlaDto(
+    DateTime ResponseDueAt,
+    DateTime ResolutionDueAt,
+    DateTime? FirstRespondedAt,
+    SlaState ResponseState,
+    SlaState ResolutionState,
+    SlaState Overall);
 
 public record CommentDto(
     int Id,
@@ -52,6 +62,7 @@ public record TicketDetailDto(
     DateTime UpdatedAt,
     DateTime? ResolvedAt,
     DateTime? ClosedAt,
+    SlaDto Sla,
     IReadOnlyList<TicketStatus> AllowedNextStatuses,
     IReadOnlyList<CommentDto> Comments,
     IReadOnlyList<StatusChangeDto> StatusChanges);
