@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ServiceDesk.Api.Domain;
 
 namespace ServiceDesk.Api.Data;
 
@@ -49,7 +51,10 @@ public static class DatabaseSetup
         if (config.GetValue("Seed:Enabled", true) && !await db.Users.AnyAsync())
         {
             var clock = scope.ServiceProvider.GetRequiredService<TimeProvider>();
-            SeedData.Populate(db, clock.GetUtcNow().UtcDateTime);
+            var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
+            // The demo password is public on purpose (it's shown on the login page of the demo).
+            var demoPassword = config["Seed:DemoPassword"] ?? SeedData.DefaultDemoPassword;
+            SeedData.Populate(db, clock.GetUtcNow().UtcDateTime, user => hasher.HashPassword(user, demoPassword));
             await db.SaveChangesAsync();
         }
     }
