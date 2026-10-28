@@ -17,4 +17,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.8" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Lets the test project unit-test internal helpers (e.g. TriageService.Validate). -->
+    <InternalsVisibleTo Include="ServiceDesk.Tests" />
+  </ItemGroup>
+
 </Project>
