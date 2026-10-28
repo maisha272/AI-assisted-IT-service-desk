@@ -478,3 +478,41 @@ code {
   padding: 0.05rem 0.35rem;
   border-radius: 4px;
 }
+
+/* ---------- SLA ---------- */
+.sla-ontrack {
+  background: #e3f5ea;
+  color: #1e7a46;
+}
+.sla-atrisk {
+  background: #fff1d6;
+  color: #9a5b00;
+  border-color: #f3cf8a;
+}
+.sla-breached {
+  background: #fde3e3;
+  color: #b42323;
+  border-color: #f2b8b8;
+}
+.sla-met {
+  background: #eceef2;
+  color: #5b6372;
+}
+.sla-time {
+  font-weight: 500;
+}
+
+.sla-list {
+  margin: 0;
+}
+.sla-list dt {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 0.5rem;
+}
+.sla-list dt:first-child {
+  margin-top: 0;
+}
+.sla-list dd {
+  margin: 0.2rem 0 0;
+}

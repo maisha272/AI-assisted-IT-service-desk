@@ -1,4 +1,5 @@
 import type {
+  SlaState,
   Agent,
   Client,
   CreateTicketRequest,
@@ -67,6 +68,7 @@ const post = <T>(path: string, body: unknown) =>
 export interface TicketFilters {
   status?: TicketStatus
   priority?: TicketPriority
+  sla?: SlaState
   search?: string
 }
 

@@ -18,6 +18,18 @@ export const TICKET_CATEGORIES = [
 ] as const
 export type TicketCategory = (typeof TICKET_CATEGORIES)[number]
 
+export const SLA_STATES = ['OnTrack', 'AtRisk', 'Breached', 'Met'] as const
+export type SlaState = (typeof SLA_STATES)[number]
+
+export interface Sla {
+  responseDueAt: string
+  resolutionDueAt: string
+  firstRespondedAt: string | null
+  responseState: SlaState
+  resolutionState: SlaState
+  overall: SlaState
+}
+
 export type UserRole = 'ClientStaff' | 'Agent'
 export type TicketSource = 'Portal' | 'Email'
 
@@ -49,6 +61,7 @@ export interface TicketSummary {
   assignedToName: string | null
   createdAt: string
   updatedAt: string
+  sla: Sla
 }
 
 export interface Comment {
@@ -84,6 +97,7 @@ export interface TicketDetail {
   updatedAt: string
   resolvedAt: string | null
   closedAt: string | null
+  sla: Sla
   allowedNextStatuses: TicketStatus[]
   comments: Comment[]
   statusChanges: StatusChange[]
