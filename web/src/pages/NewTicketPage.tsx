@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import {
   TICKET_CATEGORIES,
@@ -48,7 +48,21 @@ export default function NewTicketPage() {
 
   return (
     <section className="narrow">
-      <h1>New ticket</h1>
+      <div>
+        <Link className="back-link" to="/tickets">
+          ← All tickets
+        </Link>
+      </div>
+      <div className="page-header">
+        <div>
+          <h1>New ticket</h1>
+          <p className="muted">
+            Log an IT issue or service request. AI triage will automatically suggest classification and troubleshooting
+            steps for agent review.
+          </p>
+        </div>
+      </div>
+
       <form className="card form" onSubmit={submit}>
         {isAgent && (
           <label>
@@ -106,9 +120,14 @@ export default function NewTicketPage() {
           </label>
         </div>
         {error && <p className="error">{error}</p>}
-        <button className="button primary" disabled={busy}>
-          {busy ? 'Submitting…' : 'Submit ticket'}
-        </button>
+        <div className="triage-actions">
+          <button className="button primary" disabled={busy}>
+            {busy ? 'Submitting…' : 'Submit ticket'}
+          </button>
+          <Link className="button" to="/tickets">
+            Cancel
+          </Link>
+        </div>
       </form>
     </section>
   )

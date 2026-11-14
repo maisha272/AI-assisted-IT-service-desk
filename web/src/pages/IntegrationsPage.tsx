@@ -19,7 +19,9 @@ export default function IntegrationsPage() {
 
   const [from, setFrom] = useState('Olivia Brown <olivia@northwind.test>')
   const [subject, setSubject] = useState('Outlook keeps asking for my password')
-  const [body, setBody] = useState('Since this morning Outlook pops up a password prompt every few minutes. I am typing the right password.')
+  const [body, setBody] = useState(
+    'Since this morning Outlook pops up a password prompt every few minutes. I am typing the right password.',
+  )
   const [emailResult, setEmailResult] = useState<InboundEmailResult | null>(null)
 
   const refreshLog = useCallback(() => api.listNotifications().then(setLog), [])
@@ -67,9 +69,8 @@ export default function IntegrationsPage() {
 
       <div className="dashboard-grid">
         <div className="card">
-          <h3>Microsoft Teams</h3>
-          <p>
-            Status:{' '}
+          <div className="card-header">
+            <h3>Microsoft Teams</h3>
             {status ? (
               status.teamsConfigured ? (
                 <span className="badge sla-ontrack">Webhook configured</span>
@@ -77,9 +78,9 @@ export default function IntegrationsPage() {
                 <span className="badge sla-met">Not configured — notifications are logged only</span>
               )
             ) : (
-              '…'
+              <span className="muted">…</span>
             )}
-          </p>
+          </div>
           <p className="muted small">
             Posts an Adaptive Card to a Teams channel for every new ticket, and when a ticket becomes at risk of or
             breaches its SLA. Checked every {status?.dispatchIntervalSeconds ?? 60}s.
@@ -125,8 +126,10 @@ export default function IntegrationsPage() {
         </form>
       </div>
 
-      <h2>Notification log</h2>
-      {log && log.length === 0 && <p className="muted">No notifications yet.</p>}
+      <div className="section-header">
+        <h2>Notification log</h2>
+      </div>
+      {log && log.length === 0 && <p className="muted empty-state">No notifications yet.</p>}
       {log && log.length > 0 && (
         <div className="card table-card">
           <table className="table">
@@ -141,8 +144,10 @@ export default function IntegrationsPage() {
             <tbody>
               {log.map((n) => (
                 <tr key={n.id}>
-                  <td className="nowrap">{formatDateTime(n.createdAt)}</td>
-                  <td>{EVENT_LABELS[n.event]}</td>
+                  <td className="nowrap muted small">{formatDateTime(n.createdAt)}</td>
+                  <td>
+                    <span className="tag">{EVENT_LABELS[n.event]}</span>
+                  </td>
                   <td>{n.ticketId ? <Link to={`/tickets/${n.ticketId}`}>{n.message}</Link> : n.message}</td>
                   <td>
                     {n.delivered ? (
