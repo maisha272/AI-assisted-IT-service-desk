@@ -83,7 +83,9 @@ export default function KnowledgePage() {
 
       {showForm && (
         <form className="card form" onSubmit={create}>
-          {fromTicket && <p className="muted small">From ticket #{fromTicket}. Edit it into a reusable fix before saving.</p>}
+          {fromTicket && (
+            <p className="muted small">From ticket #{fromTicket}. Edit it into a reusable fix before saving.</p>
+          )}
           <div className="form-row">
             <label>
               Title
@@ -106,7 +108,13 @@ export default function KnowledgePage() {
           </label>
           <label>
             Resolution (what fixed it)
-            <textarea required minLength={10} rows={3} value={resolution} onChange={(e) => setResolution(e.target.value)} />
+            <textarea
+              required
+              minLength={10}
+              rows={3}
+              value={resolution}
+              onChange={(e) => setResolution(e.target.value)}
+            />
           </label>
           <button className="button primary" disabled={busy}>
             Save article
@@ -134,7 +142,10 @@ export default function KnowledgePage() {
             <ol className="search-results">
               {results.map((r) => (
                 <li key={r.id}>
-                  {r.title} <span className="muted small">· {categoryLabel(r.category)} · similarity {r.score.toFixed(2)}</span>
+                  <strong>{r.title}</strong>{' '}
+                  <span className="muted small">
+                    · {categoryLabel(r.category)} · similarity {r.score.toFixed(2)}
+                  </span>
                 </li>
               ))}
             </ol>
@@ -142,7 +153,7 @@ export default function KnowledgePage() {
         </div>
       )}
 
-      {!articles && !error && <p className="muted">Loading articles…</p>}
+      {!articles && !error && <p className="muted loading-state">Loading articles…</p>}
       <div className="kb-list">
         {articles?.map((a) => (
           <article key={a.id} className="card kb-article">
@@ -156,7 +167,7 @@ export default function KnowledgePage() {
             <p>
               <strong>Fix:</strong> {a.resolution}
             </p>
-            <p className="muted small">
+            <p className="muted small" style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
               Added {formatDateTime(a.createdAt)}
               {a.sourceTicketId && (
                 <>

@@ -104,7 +104,10 @@ export default function TriagePanel({ ticketId, onApproved }: Props) {
           </span>{' '}
           AI triage
         </h3>
-        {suggestion && <span className="tag">{suggestion.provider}</span>}
+        <div className="triage-header-badges">
+          {suggestion?.status === 'Pending' && <span className="badge status-waiting">Awaiting human approval</span>}
+          {suggestion && <span className="tag">{suggestion.provider}</span>}
+        </div>
       </div>
       {error && <p className="error">{error}</p>}
 
@@ -121,10 +124,12 @@ export default function TriagePanel({ ticketId, onApproved }: Props) {
 
       {suggestion && suggestion.status === 'Pending' && (
         <>
-          <p className="muted small">
-            Suggested {formatDateTime(suggestion.createdAt)} · confidence <strong>{suggestion.confidence}</strong>. Review and edit
-            before approving — nothing changes on the ticket until you do.
-          </p>
+          <div className="triage-approval-banner">
+            <span className="muted">
+              Suggested {formatDateTime(suggestion.createdAt)} · confidence <strong>{suggestion.confidence}</strong>.
+              Review and edit before approving — nothing changes on the ticket until you do.
+            </span>
+          </div>
           {suggestion.rationale && <p className="rationale">“{suggestion.rationale}”</p>}
 
           <div className="form-row">
@@ -153,7 +158,11 @@ export default function TriagePanel({ ticketId, onApproved }: Props) {
           </label>
           <label>
             Suggested steps (one per line)
-            <textarea rows={Math.min(8, Math.max(3, steps.split('\n').length))} value={steps} onChange={(e) => setSteps(e.target.value)} />
+            <textarea
+              rows={Math.min(8, Math.max(3, steps.split('\n').length))}
+              value={steps}
+              onChange={(e) => setSteps(e.target.value)}
+            />
           </label>
 
           {suggestion.relatedArticles.length > 0 && (
@@ -186,7 +195,9 @@ export default function TriagePanel({ ticketId, onApproved }: Props) {
       {suggestion && suggestion.status !== 'Pending' && (
         <div>
           <p>
-            <span className={`badge ${suggestion.status === 'Approved' ? 'sla-met' : 'sla-breached'}`}>{suggestion.status}</span>{' '}
+            <span className={`badge ${suggestion.status === 'Approved' ? 'sla-met' : 'sla-breached'}`}>
+              {suggestion.status}
+            </span>{' '}
             by {suggestion.reviewedByName} {suggestion.reviewedAt && formatDateTime(suggestion.reviewedAt)}
             {suggestion.status === 'Approved' && (suggestion.wasEdited ? ' (with edits)' : ' (as suggested)')}
           </p>

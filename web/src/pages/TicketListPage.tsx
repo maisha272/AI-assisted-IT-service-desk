@@ -43,7 +43,14 @@ export default function TicketListPage() {
   return (
     <section>
       <div className="page-header">
-        <h1>{isAgent ? 'All tickets' : 'My tickets'}</h1>
+        <div>
+          <h1>{isAgent ? 'All tickets' : 'My tickets'}</h1>
+          <p className="muted">
+            {isAgent
+              ? 'Filter, triage, and manage support requests across all managed clients.'
+              : 'Track your open support requests and conversation history.'}
+          </p>
+        </div>
         <Link className="button primary" to="/tickets/new">
           New ticket
         </Link>
@@ -105,8 +112,8 @@ export default function TicketListPage() {
       </div>
 
       {error && <p className="error">{error}</p>}
-      {!tickets && !error && <p className="muted">Loading tickets…</p>}
-      {tickets && tickets.length === 0 && <p className="muted">No tickets match these filters.</p>}
+      {!tickets && !error && <p className="muted loading-state">Loading tickets…</p>}
+      {tickets && tickets.length === 0 && <p className="muted empty-state">No tickets match these filters.</p>}
 
       {tickets && tickets.length > 0 && (
         <div className="card table-card">
@@ -127,7 +134,7 @@ export default function TicketListPage() {
             <tbody>
               {tickets.map((t) => (
                 <tr key={t.id}>
-                  <td className="muted">{t.id}</td>
+                  <td className="ticket-id-cell">#{t.id}</td>
                   <td>
                     <Link to={`/tickets/${t.id}`}>{t.title}</Link>
                   </td>
@@ -143,7 +150,7 @@ export default function TicketListPage() {
                     <SlaBadge state={t.sla.overall} dueAt={isOpen(t.status) ? activeDeadline(t.sla) : undefined} />
                   </td>
                   <td>{t.assignedToName ?? <span className="muted">Unassigned</span>}</td>
-                  <td className="nowrap">{formatDateTime(t.createdAt)}</td>
+                  <td className="nowrap muted small">{formatDateTime(t.createdAt)}</td>
                 </tr>
               ))}
             </tbody>

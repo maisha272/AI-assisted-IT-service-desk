@@ -10,7 +10,7 @@ import { formatDuration, statusLabel } from '../utils/format'
 import { activeDeadline } from '../utils/sla'
 
 // Single-series charts use one brand hue; the title names the series, so no legend is needed.
-const CHART_COLOR = '#2357d9'
+const CHART_COLOR = '#2563eb'
 
 export default function DashboardPage() {
   const [data, setData] = useState<Dashboard | null>(null)
@@ -21,16 +21,22 @@ export default function DashboardPage() {
   }, [])
 
   if (error) return <p className="error">{error}</p>
-  if (!data) return <p className="muted">Loading dashboard…</p>
+  if (!data) return <p className="muted loading-state">Loading dashboard…</p>
 
   return (
     <section>
       <div className="page-header">
-        <h1>Dashboard</h1>
+        <div>
+          <h1>Dashboard</h1>
+          <p className="muted">Live service desk queue health, SLA compliance, and AI triage activity.</p>
+        </div>
+        <Link className="button primary" to="/tickets/new">
+          New ticket
+        </Link>
       </div>
 
       <div className="stat-grid">
-        <StatTile label="Open tickets" value={data.openTickets} hint={`${data.unassignedTickets} unassigned`} />
+        <StatTile label="Open tickets" value={data.openTickets} hint={`${data.unassignedTickets} unassigned`} to="/tickets?open=true" />
         <StatTile
           label="SLA breached"
           value={data.breachedTickets}
@@ -64,15 +70,22 @@ export default function DashboardPage() {
 
       <div className="dashboard-grid">
         <div className="card">
-          <h3>Open tickets by priority</h3>
+          <div className="card-header">
+            <h3>Open tickets by priority</h3>
+            <span className="muted small">Active queue distribution</span>
+          </div>
           <div className="chart" role="img" aria-label="Bar chart of open tickets by priority">
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={data.openByPriority} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
-                <CartesianGrid vertical={false} stroke="#eceef2" />
-                <XAxis dataKey="priority" tickLine={false} axisLine={{ stroke: '#d5d9e0' }} tick={{ fill: '#6a7282', fontSize: 13 }} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: '#6a7282', fontSize: 12 }} />
-                <Tooltip cursor={{ fill: 'rgba(35, 87, 217, 0.06)' }} formatter={(v: number) => [v, 'Open tickets']} />
-                <Bar dataKey="count" fill={CHART_COLOR} radius={[4, 4, 0, 0]} maxBarSize={48} isAnimationActive={false} />
+                <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+                <XAxis dataKey="priority" tickLine={false} axisLine={{ stroke: 'var(--border-strong)' }} tick={{ fill: 'var(--muted)', fontSize: 12.5 }} />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: 'var(--muted)', fontSize: 12 }} />
+                <Tooltip
+                  cursor={{ fill: 'rgba(37, 99, 235, 0.06)' }}
+                  contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)' }}
+                  formatter={(v: number) => [v, 'Open tickets']}
+                />
+                <Bar dataKey="count" fill={CHART_COLOR} radius={[6, 6, 0, 0]} maxBarSize={48} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -83,7 +96,10 @@ export default function DashboardPage() {
         </div>
 
         <div className="card">
-          <h3>Open tickets by status</h3>
+          <div className="card-header">
+            <h3>Open tickets by status</h3>
+            <span className="muted small">Click status to filter</span>
+          </div>
           <ul className="status-counts">
             {data.openByStatus.map((s) => (
               <li key={s.status}>
@@ -98,9 +114,12 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <h2>Needs attention</h2>
+      <div className="section-header">
+        <h2>Needs attention</h2>
+        <span className="muted small">Tickets approaching or past SLA targets</span>
+      </div>
       {data.needsAttention.length === 0 ? (
-        <p className="muted">No tickets are near or past their SLA. Nice work.</p>
+        <p className="muted empty-state">No tickets are near or past their SLA. Nice work.</p>
       ) : (
         <div className="card table-card">
           <table className="table">
@@ -118,7 +137,7 @@ export default function DashboardPage() {
             <tbody>
               {data.needsAttention.map((t) => (
                 <tr key={t.id}>
-                  <td className="muted">{t.id}</td>
+                  <td className="ticket-id-cell">#{t.id}</td>
                   <td>
                     <Link to={`/tickets/${t.id}`}>{t.title}</Link>
                   </td>

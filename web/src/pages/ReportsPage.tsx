@@ -18,8 +18,8 @@ import { categoryLabel } from '../utils/format'
 import { downloadCsv, toCsv } from '../utils/csv'
 
 // Single-series charts: one brand hue, the card title names the series, no legend needed.
-const CHART_COLOR = '#2357d9'
-const AXIS_TICK = { fill: '#6a7282', fontSize: 12 }
+const CHART_COLOR = '#2563eb'
+const AXIS_TICK = { fill: 'var(--muted)', fontSize: 12 }
 const RANGES = [30, 90, 180] as const
 const SLA_TARGET_PERCENT = 90
 
@@ -57,17 +57,25 @@ export default function ReportsPage() {
   return (
     <section>
       <div className="page-header">
-        <h1>Reports</h1>
+        <div>
+          <h1>Reports</h1>
+          <p className="muted">SLA performance trends, client ticket volume, and category breakdown.</p>
+        </div>
         <div className="segmented" role="group" aria-label="Date range">
           {RANGES.map((r) => (
-            <button key={r} className={`button small ${days === r ? 'primary' : ''}`} onClick={() => setDays(r)} aria-pressed={days === r}>
+            <button
+              key={r}
+              className={`button small ${days === r ? 'primary' : ''}`}
+              onClick={() => setDays(r)}
+              aria-pressed={days === r}
+            >
               Last {r} days
             </button>
           ))}
         </div>
       </div>
       {error && <p className="error">{error}</p>}
-      {!report && !error && <p className="muted">Loading report…</p>}
+      {!report && !error && <p className="muted loading-state">Loading report…</p>}
 
       {report && (
         <>
@@ -77,23 +85,50 @@ export default function ReportsPage() {
               label="Resolution SLA compliance"
               value={report.overallCompliancePercent != null ? `${report.overallCompliancePercent}%` : '—'}
               hint={`Target ${SLA_TARGET_PERCENT}%`}
-              tone={report.overallCompliancePercent != null && report.overallCompliancePercent < SLA_TARGET_PERCENT ? 'warning' : undefined}
+              tone={
+                report.overallCompliancePercent != null && report.overallCompliancePercent < SLA_TARGET_PERCENT
+                  ? 'warning'
+                  : undefined
+              }
             />
-            <StatTile label="Clients with tickets" value={report.byClient.length} />
+            <StatTile label="Clients with tickets" value={report.byClient.length} hint="Active client accounts" />
           </div>
 
           <div className="card">
-            <h3>Resolution SLA compliance by week</h3>
+            <div className="card-header">
+              <h3>Resolution SLA compliance by week</h3>
+              <span className="muted small">Target: {SLA_TARGET_PERCENT}%</span>
+            </div>
             <div role="img" aria-label="Line chart of weekly SLA compliance percentage">
               <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={weeks} margin={{ top: 8, right: 16, bottom: 0, left: -12 }}>
-                  <CartesianGrid vertical={false} stroke="#eceef2" />
-                  <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: '#d5d9e0' }} tick={AXIS_TICK} minTickGap={16} />
-                  <YAxis domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} tickLine={false} axisLine={false} tick={AXIS_TICK} />
-                  <ReferenceLine y={SLA_TARGET_PERCENT} stroke="#9aa1ad" strokeDasharray="4 4" label={{ value: 'Target', position: 'insideTopRight', fill: '#6a7282', fontSize: 11 }} />
+                  <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="label"
+                    tickLine={false}
+                    axisLine={{ stroke: 'var(--border-strong)' }}
+                    tick={AXIS_TICK}
+                    minTickGap={16}
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    tickFormatter={(v: number) => `${v}%`}
+                    tickLine={false}
+                    axisLine={false}
+                    tick={AXIS_TICK}
+                  />
+                  <ReferenceLine
+                    y={SLA_TARGET_PERCENT}
+                    stroke="#94a3b8"
+                    strokeDasharray="4 4"
+                    label={{ value: 'Target', position: 'insideTopRight', fill: 'var(--muted)', fontSize: 11 }}
+                  />
                   <Tooltip
+                    contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)' }}
                     formatter={(value, _name, item) => [
-                      value == null ? 'No tickets resolved' : `${value}% (${item.payload.resolvedWithinSla}/${item.payload.resolved})`,
+                      value == null
+                        ? 'No tickets resolved'
+                        : `${value}% (${item.payload.resolvedWithinSla}/${item.payload.resolved})`,
                       'Within SLA',
                     ]}
                     labelFormatter={(l: string) => `Week of ${l}`}
@@ -102,7 +137,7 @@ export default function ReportsPage() {
                     type="linear"
                     dataKey="compliancePercent"
                     stroke={CHART_COLOR}
-                    strokeWidth={2}
+                    strokeWidth={2.5}
                     dot={{ r: 4, fill: CHART_COLOR, strokeWidth: 0 }}
                     activeDot={{ r: 6 }}
                     connectNulls
@@ -134,7 +169,9 @@ export default function ReportsPage() {
                 <tbody>
                   {report.byClient.map((c) => (
                     <tr key={c.clientId}>
-                      <td>{c.clientName}</td>
+                      <td>
+                        <strong>{c.clientName}</strong>
+                      </td>
                       <td className="num">{c.total}</td>
                       <td className="num">{c.open}</td>
                       <td className="num">{c.resolved}</td>
@@ -146,15 +183,34 @@ export default function ReportsPage() {
             </div>
 
             <div className="card">
-              <h3>Tickets by category</h3>
+              <div className="card-header">
+                <h3>Tickets by category</h3>
+              </div>
               <div role="img" aria-label="Bar chart of tickets by category">
-                <ResponsiveContainer width="100%" height={Math.max(160, categories.length * 34)}>
+                <ResponsiveContainer width="100%" height={Math.max(160, categories.length * 36)}>
                   <BarChart data={categories} layout="vertical" margin={{ top: 0, right: 24, bottom: 0, left: 8 }}>
-                    <CartesianGrid horizontal={false} stroke="#eceef2" />
+                    <CartesianGrid horizontal={false} stroke="var(--border)" strokeDasharray="3 3" />
                     <XAxis type="number" allowDecimals={false} tickLine={false} axisLine={false} tick={AXIS_TICK} />
-                    <YAxis type="category" dataKey="label" width={120} tickLine={false} axisLine={false} tick={AXIS_TICK} />
-                    <Tooltip cursor={{ fill: 'rgba(35, 87, 217, 0.06)' }} formatter={(v: number) => [v, 'Tickets']} />
-                    <Bar dataKey="count" fill={CHART_COLOR} radius={[0, 4, 4, 0]} maxBarSize={22} isAnimationActive={false} />
+                    <YAxis
+                      type="category"
+                      dataKey="label"
+                      width={120}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={AXIS_TICK}
+                    />
+                    <Tooltip
+                      cursor={{ fill: 'rgba(37, 99, 235, 0.06)' }}
+                      contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)' }}
+                      formatter={(v: number) => [v, 'Tickets']}
+                    />
+                    <Bar
+                      dataKey="count"
+                      fill={CHART_COLOR}
+                      radius={[0, 6, 6, 0]}
+                      maxBarSize={22}
+                      isAnimationActive={false}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

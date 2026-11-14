@@ -53,16 +53,18 @@ export default function TicketDetailPage() {
     setIsInternal(false)
   }
 
-  if (!ticket) return error ? <p className="error">{error}</p> : <p className="muted">Loading ticket…</p>
+  if (!ticket) return error ? <p className="error">{error}</p> : <p className="muted loading-state">Loading ticket…</p>
 
   return (
     <section className="ticket-detail">
-      <p>
-        <Link to="/tickets">← All tickets</Link>
-      </p>
+      <div>
+        <Link className="back-link" to="/tickets">
+          ← All tickets
+        </Link>
+      </div>
       <div className="page-header">
         <h1>
-          <span className="muted">#{ticket.id}</span> {ticket.title}
+          <span className="ticket-title-id">#{ticket.id}</span> {ticket.title}
         </h1>
         <div className="badges">
           <PriorityBadge priority={ticket.priority} />
@@ -93,21 +95,31 @@ export default function TicketDetailPage() {
             <TriagePanel ticketId={ticket.id} onApproved={() => api.getTicket(id).then(setTicket)} />
           )}
 
-          <h2>Conversation</h2>
-          {ticket.comments.length === 0 && <p className="muted">No comments yet.</p>}
-          <ol className="comments">
-            {ticket.comments.map((c) => (
-              <li key={c.id} className={`comment ${c.isInternal ? 'internal' : ''} ${c.authorRole === 'Agent' ? 'from-agent' : ''}`}>
-                <div className="comment-meta">
-                  <strong>{c.authorName}</strong>
-                  {c.authorRole === 'Agent' && <span className="tag">Agent</span>}
-                  {c.isInternal && <span className="tag internal-tag">Internal note</span>}
-                  <span className="muted">{formatDateTime(c.createdAt)}</span>
-                </div>
-                <p>{c.body}</p>
-              </li>
-            ))}
-          </ol>
+          <div className="section-header">
+            <h2>Conversation</h2>
+            <span className="muted small">
+              {ticket.comments.length} {ticket.comments.length === 1 ? 'message' : 'messages'}
+            </span>
+          </div>
+          {ticket.comments.length === 0 && <p className="muted empty-state">No comments yet.</p>}
+          {ticket.comments.length > 0 && (
+            <ol className="comments">
+              {ticket.comments.map((c) => (
+                <li
+                  key={c.id}
+                  className={`comment ${c.isInternal ? 'internal' : ''} ${c.authorRole === 'Agent' ? 'from-agent' : ''}`}
+                >
+                  <div className="comment-meta">
+                    <strong>{c.authorName}</strong>
+                    {c.authorRole === 'Agent' && <span className="tag">Agent</span>}
+                    {c.isInternal && <span className="tag internal-tag">Internal note</span>}
+                    <span className="muted">{formatDateTime(c.createdAt)}</span>
+                  </div>
+                  <p>{c.body}</p>
+                </li>
+              ))}
+            </ol>
+          )}
 
           {ticket.status !== 'Closed' && (
             <form className="card comment-form" onSubmit={submitComment}>
@@ -119,12 +131,14 @@ export default function TicketDetailPage() {
                 onChange={(e) => setCommentBody(e.target.value)}
                 placeholder="Write a reply…"
               />
-              <div className="form-row">
-                {isAgent && (
+              <div className="form-row" style={{ marginTop: '0.75rem' }}>
+                {isAgent ? (
                   <label className="checkbox">
                     <input type="checkbox" checked={isInternal} onChange={(e) => setIsInternal(e.target.checked)} />
                     Internal note (hidden from client)
                   </label>
+                ) : (
+                  <span />
                 )}
                 <button className="button primary" disabled={busy || !commentBody.trim()}>
                   Post comment
@@ -138,7 +152,9 @@ export default function TicketDetailPage() {
           <div className="card">
             <h3>Status</h3>
             {ticket.allowedNextStatuses.length === 0 ? (
-              <p className="muted">No further actions.</p>
+              <p className="muted small" style={{ margin: 0 }}>
+                No further actions.
+              </p>
             ) : (
               <div className="button-stack">
                 {ticket.allowedNextStatuses.map((s: TicketStatus) => (
@@ -153,30 +169,34 @@ export default function TicketDetailPage() {
           <div className="card">
             <h3>SLA</h3>
             <dl className="sla-list">
-              <dt>First response</dt>
-              <dd>
-                <SlaBadge
-                  state={ticket.sla.responseState}
-                  dueAt={isOpen(ticket.status) && !ticket.sla.firstRespondedAt ? ticket.sla.responseDueAt : undefined}
-                />
-                <div className="muted small">
-                  {ticket.sla.firstRespondedAt
-                    ? `Responded ${formatDateTime(ticket.sla.firstRespondedAt)}`
-                    : `Due ${formatDateTime(ticket.sla.responseDueAt)}`}
-                </div>
-              </dd>
-              <dt>Resolution</dt>
-              <dd>
-                <SlaBadge
-                  state={ticket.sla.resolutionState}
-                  dueAt={isOpen(ticket.status) ? ticket.sla.resolutionDueAt : undefined}
-                />
-                <div className="muted small">
-                  {ticket.resolvedAt
-                    ? `Resolved ${formatDateTime(ticket.resolvedAt)}`
-                    : `Due ${formatDateTime(ticket.sla.resolutionDueAt)}`}
-                </div>
-              </dd>
+              <div className="sla-item">
+                <dt>First response</dt>
+                <dd>
+                  <SlaBadge
+                    state={ticket.sla.responseState}
+                    dueAt={isOpen(ticket.status) && !ticket.sla.firstRespondedAt ? ticket.sla.responseDueAt : undefined}
+                  />
+                  <div className="muted small">
+                    {ticket.sla.firstRespondedAt
+                      ? `Responded ${formatDateTime(ticket.sla.firstRespondedAt)}`
+                      : `Due ${formatDateTime(ticket.sla.responseDueAt)}`}
+                  </div>
+                </dd>
+              </div>
+              <div className="sla-item">
+                <dt>Resolution</dt>
+                <dd>
+                  <SlaBadge
+                    state={ticket.sla.resolutionState}
+                    dueAt={isOpen(ticket.status) ? ticket.sla.resolutionDueAt : undefined}
+                  />
+                  <div className="muted small">
+                    {ticket.resolvedAt
+                      ? `Resolved ${formatDateTime(ticket.resolvedAt)}`
+                      : `Due ${formatDateTime(ticket.sla.resolutionDueAt)}`}
+                  </div>
+                </dd>
+              </div>
             </dl>
           </div>
 
@@ -209,7 +229,7 @@ export default function TicketDetailPage() {
                   ))}
                 </select>
               </label>
-              <label>
+              <label style={{ marginBottom: 0 }}>
                 Assignee
                 <select
                   value={ticket.assignedToId ?? ''}
@@ -231,7 +251,7 @@ export default function TicketDetailPage() {
             <div className="card">
               <h3>Knowledge base</h3>
               <p className="muted small">Fixed something new? Save it so AI triage can suggest it next time.</p>
-              <Link className="button" to={`/knowledge?fromTicket=${ticket.id}`}>
+              <Link className="button full" to={`/knowledge?fromTicket=${ticket.id}`}>
                 Save fix to knowledge base
               </Link>
             </div>
